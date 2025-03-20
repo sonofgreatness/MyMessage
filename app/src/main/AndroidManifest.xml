@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <application
+        android:allowBackup="true"
+        android:appCategory="audio"
+        android:icon="@drawable/ic_main_icon"
+        android:label="@string/app_name"
+        android:name=".MyMessageApplication"
+        android:roundIcon="@drawable/ic_main_icon"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyMessage">
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
+        <service
+            android:name="project.mymessage.MyMessagingService"
+            android:exported="true" />
+
+        <receiver
+            android:name="project.mymessage.MessageReadReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="project.mymessage.ACTION_MESSAGE_READ" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="project.mymessage.MessageReplyReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="project.mymessage.ACTION_MESSAGE_REPLY" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="project.mymessage.MainActivity2"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.MyMessage">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.MyMessage">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+            </intent-filter>
+        </receiver> <!-- BroadcastReceiver that listens for incoming MMS messages -->
+        <receiver
+            android:name=".MmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_WAP_PUSH">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+
+                <data android:mimeType="application/vnd.wap.mms-message" />
+            </intent-filter>
+        </receiver> <!-- Service that delivers messages from the phone "quick response" -->
+        <service
+            android:name=".HeadlessSmsSendService"
+            android:exported="true"
+            android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MyMessage</string>
+    <string name="title_activity_main2">messages_index</string>
+</resources>
