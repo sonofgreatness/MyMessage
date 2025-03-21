@@ -23,6 +23,9 @@ jobs:
       - name: Grant Execute Permission to Gradlew
         run: chmod +x gradlew
 
+      - name: Grant Execute Permission to Gradlew
+        run: echo "eat shit"
+
       - name: Validate Gradle Wrapper
         run: ./gradlew --version
 
