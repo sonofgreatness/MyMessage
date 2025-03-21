@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Debug File Structure
-        run: ls -l
+        run: ls -R app/build/outputs/apk/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
