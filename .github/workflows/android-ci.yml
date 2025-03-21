@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch:
+
+permissions:
+  contents: write  # Grants permission to create releases
 
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -24,14 +25,8 @@ jobs:
       - name: Grant Execute Permission to Gradlew
         run: chmod +x gradlew
 
-      - name: Validate Gradle Wrapper
-        run: ./gradlew --version
-
       - name: Build APK
         run: ./gradlew assembleDebug --stacktrace
-
-      - name: Debug APK File Structure
-        run: ls -R app/build/outputs/apk
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
@@ -41,12 +36,25 @@ jobs:
 
   release:
     name: Create GitHub Release
-    needs: build  # Run only after build job succeeds
+    needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Generate Tag
+        run: |
+          TAG_NAME=v1.${{ github.run_number }}
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.TAG_NAME }}
+          name: "Release ${{ env.TAG_NAME }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download APK Artifact
         uses: actions/download-artifact@v4
@@ -54,18 +62,9 @@ jobs:
           name: app-debug.apk
           path: app/build/outputs/apk/debug/
 
-      - name: Create Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v1.${{ github.run_number }}
-          name: "Release v1.${{ github.run_number }}"
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ env.TAG_NAME }}  # Fix: Use the generated tag
           files: app/build/outputs/apk/debug/app-debug.apk
           token: ${{ secrets.GITHUB_TOKEN }}
