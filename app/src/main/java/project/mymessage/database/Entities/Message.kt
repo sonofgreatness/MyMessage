@@ -16,10 +16,10 @@ import java.sql.Timestamp
 )
 data class Message(
       @PrimaryKey(autoGenerate = true) val id: Int = 0,
-      @ColumnInfo(name = "from_id") val from_id: String,  // Foreign key
+      @ColumnInfo(name = "from_id") val from_id: String,
       @ColumnInfo(name = "to_id") val to_id: String?,
       @ColumnInfo(name = "content") val content: String,
-      @ColumnInfo(name = "message_type") val messageType: Int, // e.g., SENT, RECEIVED
+      @ColumnInfo(name = "message_type") val messageType: Int,
       @ColumnInfo(name = "date_created") val dateCreated: Timestamp = Timestamp(System.currentTimeMillis()),
       @ColumnInfo(name = "status") val status: Enums.MessageStatus = Enums.MessageStatus.SENT,
       @ColumnInfo(name = "is_read") val isRead: Boolean = false

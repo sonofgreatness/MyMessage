@@ -6,6 +6,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import project.mymessage.database.Daos.ConversationDao
 import project.mymessage.database.Daos.MessageDao
 import project.mymessage.database.Daos.SearchDao
@@ -20,7 +22,8 @@ import project.mymessage.util.Constants
     (
     entities = [Message::class,Conversation::class,
     SearchQuery::class
-    ], version = 2, exportSchema = false
+    ], version = 3,
+    exportSchema = false
 )
 @TypeConverters(TimestampConverter::class, UUIDConverter::class)
 abstract class MainDatabase :RoomDatabase() {
@@ -46,7 +49,7 @@ abstract class MainDatabase :RoomDatabase() {
                     Constants.LOCAL_DATABASE_NAME
 
                 )
-
+                    .addMigrations(Migrations.MIGRATION_2_3)
                     .fallbackToDestructiveMigration()
                     .build()
 
@@ -56,5 +59,7 @@ abstract class MainDatabase :RoomDatabase() {
         }
 
     }
+
+
 
 }
