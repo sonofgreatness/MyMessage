@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import project.mymessage.ui.nav.Navigation
 import project.mymessage.ui.theme.MyMessageTheme
+import project.mymessage.ui.viewModels.AboutViewModel
 import project.mymessage.ui.viewModels.ContactsViewModel
 import project.mymessage.ui.viewModels.ConversationViewModel
 import project.mymessage.ui.viewModels.SearchViewModel
@@ -25,6 +26,8 @@ class MainActivity2 : ComponentActivity() {
     private val mConversationViewModel: ConversationViewModel by viewModels()
     private val mContactsViewModel: ContactsViewModel by viewModels()
      private  val mSearchViewModel :SearchViewModel by viewModels ()
+    private val mAboutViewModel : AboutViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = ContextCompat.getColor(this, R.color.grey_900)
@@ -33,7 +36,7 @@ class MainActivity2 : ComponentActivity() {
             MyMessageTheme {
 
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    Navigation(mConversationViewModel, mContactsViewModel, mSearchViewModel)
+                    Navigation(mConversationViewModel, mContactsViewModel, mSearchViewModel, mAboutViewModel)
                 }
             }
 

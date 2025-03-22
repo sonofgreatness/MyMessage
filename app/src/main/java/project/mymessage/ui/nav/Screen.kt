@@ -10,6 +10,7 @@ sealed class Screen(val route : String,val title : String?)
     object UnreadMessageScreen : Screen("unread_messages_screen", "UnreadMessages")
     object SearchScreen : Screen("search_screen", "Search")
     object MessagesScreen :Screen("messages_screen","messages")
+    object  AboutScreen : Screen("about_screen", "about")
 
 
 

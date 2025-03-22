@@ -152,7 +152,6 @@ class ChatsUI {
                         }
                     }
 
-                    // Row: "Messages" on the left, Icons on the right
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -181,7 +180,10 @@ class ChatsUI {
                                 })
                             Spacer(modifier = Modifier.width(10.dp))
                             Icon(Icons.Default.MoreVert, contentDescription = "More",
-                                modifier = Modifier.size(24.dp))
+                                modifier = Modifier.size(24.dp)
+                                    .clickable {
+                                        navController.navigate(Screen.AboutScreen.route)
+                                    })
                         }
                     }
                 }

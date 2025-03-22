@@ -20,9 +20,11 @@ package project.mymessage.ui.nav
     import androidx.navigation.compose.rememberNavController
     import project.mymessage.ui.chats.ChatsUI
     import project.mymessage.ui.chats.ChatsUI.Companion.UnreadMessages
+    import project.mymessage.ui.configs.AboutUI
     import project.mymessage.ui.configs.FilteredListsUI
     import project.mymessage.ui.configs.SearchUI.Companion.SearchScreen
     import project.mymessage.ui.contacts.ContactUI
+    import project.mymessage.ui.viewModels.AboutViewModel
     import project.mymessage.ui.viewModels.ContactsViewModel
     import project.mymessage.ui.viewModels.ConversationViewModel
 
@@ -32,7 +34,8 @@ package project.mymessage.ui.nav
 @Composable
 fun Navigation(conversationViewModel: ConversationViewModel,
                contactsViewModel: ContactsViewModel,
-               searchViewModel: SearchViewModel
+               searchViewModel: SearchViewModel,
+               aboutViewModel: AboutViewModel
 ) {
     val navController = rememberNavController()
 
@@ -114,6 +117,10 @@ fun Navigation(conversationViewModel: ConversationViewModel,
                         conversationViewModel,
                         search_term = entry.arguments?.getString("search_term")
                     )
+                }
+                composable(route = Screen.AboutScreen.route){
+                    AboutUI.AboutScreen(
+                        viewModel =aboutViewModel)
                 }
             }
         }
