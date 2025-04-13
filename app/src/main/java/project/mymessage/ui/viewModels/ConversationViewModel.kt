@@ -1,6 +1,16 @@
 package project.mymessage.ui.viewModels
 
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.telephony.SubscriptionInfo
+import android.telephony.SubscriptionManager
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,19 +19,23 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import project.mymessage.R
 import project.mymessage.database.Entities.Conversation
 import project.mymessage.database.Entities.ConversationWithMessages
 import project.mymessage.database.Entities.Message
 import project.mymessage.domain.repository.interfaces.ConversationRepository
 import project.mymessage.domain.repository.interfaces.MessageRepository
-import project.mymessage.util.Enums
-import java.sql.Timestamp
+import project.mymessage.domain.use_cases.chat.SendMessageUseCase
+import project.mymessage.ui.contacts.Contact
+import project.mymessage.util.operationalstates.SendMessageState
 import javax.inject.Inject
 
 @HiltViewModel
 class ConversationViewModel @Inject constructor(
-  private val  conversationRepository: ConversationRepository,
- private  val  messageRepository: MessageRepository
+    private val  conversationRepository: ConversationRepository,
+    private  val  messageRepository: MessageRepository,
+    private val sendMessageUseCase: SendMessageUseCase,
+    private val app : Application
 ): ViewModel(){
 
 
@@ -54,9 +68,27 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
     private  val _filteredMessages = MutableLiveData<List<Message>>()
          val filteredMessages:LiveData<List<Message>> get() = _filteredMessages
 
+
+
+    private val _currentSimDisplayName = MutableLiveData<String>()
+    val currentSimDisplayName: LiveData<String> get() = _currentSimDisplayName
+
+    private val _currentSimIcon = MutableLiveData<Drawable?>()
+    val currentSimIcon: LiveData<Drawable?> get() = _currentSimIcon
+
+    private val _currentSimIconTint = MutableLiveData<Int>()
+    val currentSimIconTint: LiveData<Int> get() = _currentSimIconTint
+
+    private val sharedPreferences: SharedPreferences =
+        app.getSharedPreferences("sim_prefs", Context.MODE_PRIVATE)
+    private val subscriptionManager: SubscriptionManager? =
+        ContextCompat.getSystemService(app, SubscriptionManager::class.java)
+
     init {
 
-
+        viewModelScope.launch(Dispatchers.IO) {
+            loadSimData()
+        }
 
        /* viewModelScope.launch {
 
@@ -110,6 +142,58 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
 
 
     }
+    private suspend fun loadSimData() {
+        val selectedSimSlot = sharedPreferences.getInt("selected_sim_slot", 0)
+        updateSimData(selectedSimSlot)
+    }
+
+    private suspend fun updateSimData(simSlot: Int) {
+        withContext(Dispatchers.Main){
+            Log.d("SIM_Update","Sim Slot selected :$simSlot")
+        }
+        if (subscriptionManager == null) {
+            withContext(Dispatchers.Main) {
+                _currentSimDisplayName.value = "No SIM"
+                _currentSimIcon.value = null
+                _currentSimIconTint.value = android.graphics.Color.GRAY // Or any default color
+                Toast.makeText(app.applicationContext,"Subscription Manager is null",Toast.LENGTH_SHORT).show()
+            }
+
+            return
+        }
+
+        try {
+            val subscriptionInfo: SubscriptionInfo? =
+                subscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(simSlot)
+            if (subscriptionInfo != null) {
+                withContext(Dispatchers.Main) {
+                    _currentSimDisplayName.value =
+                        subscriptionInfo.displayName?.toString() ?: "SIM $simSlot"
+                    val iconBitmap: Bitmap = subscriptionInfo.createIconBitmap(app.applicationContext)
+                    _currentSimIcon.value = BitmapDrawable(app.resources, iconBitmap)
+                    _currentSimIconTint.value = subscriptionInfo.iconTint
+                    Toast.makeText(app.applicationContext,"Subscription Info is not null",Toast.LENGTH_SHORT).show()
+
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    _currentSimDisplayName.value = "SIM $simSlot (Inactive)"
+                    _currentSimIcon.value =
+                        ContextCompat.getDrawable(app, R.drawable.baseline_sim_card_alert_24) // Replace with your placeholder icon
+                    _currentSimIconTint.value = android.graphics.Color.GRAY
+                    Toast.makeText(app.applicationContext,"Subscription info is null",Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.e("SimManager", "SecurityException: ${e.message}")
+            withContext(Dispatchers.Main) {
+                _currentSimDisplayName.value = "Permission Denied"
+                _currentSimIcon.value = null
+                _currentSimIconTint.value = android.graphics.Color.RED
+            }
+        }
+
+    }
 
 
     fun addConversation(entity : Conversation){}
@@ -125,7 +209,28 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
        }
    }
 
+    fun sendMessageToContacts(contacts : List<Contact>,
+                                message:String) {
 
+    viewModelScope.launch {
+        sendMessageUseCase(contacts[0], message, 1).collect {
+            when(it)
+            {
+                is SendMessageState.Loading -> {
+                    Toast.makeText(app.applicationContext, "Sending", Toast.LENGTH_SHORT).show()
+                }
+                is SendMessageState.Success ->{
+                    Toast.makeText(app.applicationContext, "Sent ", Toast.LENGTH_SHORT).show()
+                }
+                is SendMessageState.Error ->{
+                    Toast.makeText(app.applicationContext, "Error ${it.exceptionMessage} ", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        }
+    }
+
+    }
     fun updateConversations(){
         viewModelScope.launch {
             conversationRepository.getTotalUnreadMessages().let{

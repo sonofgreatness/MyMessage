@@ -11,4 +11,7 @@ interface ConversationRepository {
     suspend fun getConversationsWithMessagesFrom(fromId:String) : List<ConversationWithMessages>
     suspend fun  getTotalUnreadMessages() : Int
     suspend  fun  getFilteredConversations(search_term :String) : List<ConversationWithMessages>
+    suspend fun updateConversation(entity: Conversation)
+    suspend fun  getConversation(from:String, to:String) : Conversation?
+    suspend fun deleteConversationFrom(from:String)
 }

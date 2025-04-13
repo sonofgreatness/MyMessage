@@ -7,6 +7,7 @@ class Constants {
     companion object {
         const val LOCAL_DATABASE_NAME="MyMessageDatabase"
         const val MYMESSAGE_TAG="MyMessageLogger"
+        const val PLACEHOLDER_CONVERSATION="placeholder"
         const val GITHUB_API = "https://api.github.com/"
         const val GITHUB_REPO_URL = "repos/sonofgreatness/MyMessage/releases/latest"
         const val MAX_MESSAGES_SEARCH=8

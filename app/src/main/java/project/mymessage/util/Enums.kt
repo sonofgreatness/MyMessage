@@ -7,6 +7,6 @@ class Enums {
         Outgoing(2);
     }
     enum class MessageStatus {
-        SENT, DELIVERED, DRAFT
+        SENT, DELIVERED, DRAFT, ERROR
     }
 }

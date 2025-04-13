@@ -1,5 +1,6 @@
 package project.mymessage.database.Daos
 
+import androidx.compose.animation.core.KeyframesSpec
 import androidx.room.*
 import project.mymessage.database.Entities.Conversation
 import project.mymessage.database.Entities.ConversationWithMessages
@@ -7,8 +8,9 @@ import project.mymessage.database.Entities.ConversationWithMessages
 @Dao
 interface ConversationDao {
     @Insert
-        (onConflict = OnConflictStrategy.IGNORE)
+        (onConflict = OnConflictStrategy.REPLACE)
     suspend fun addConversation (conversation:Conversation)
+
     @Query("SELECT * FROM  conversation")
       suspend fun  getAllConversations() : List<Conversation>
 
@@ -40,6 +42,13 @@ interface ConversationDao {
     )
 
   suspend  fun  getFilteredConversations(search_term :String) : List<ConversationWithMessages>
+  @Update
+  suspend fun updateConversation(entity: Conversation)
+ @Query ("SELECT * FROM conversation WHERE `from`=:from AND `to`=:to")
+ suspend fun  getConversation(from :String, to :String) : Conversation?
+
+ @Query("DELETE FROM conversation WHERE `from`=:from")
+ suspend fun deleteConversationFrom(from:String)
 
 
 }

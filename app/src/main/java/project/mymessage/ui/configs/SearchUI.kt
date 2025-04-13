@@ -261,15 +261,12 @@ class SearchUI {
             val fullText = message.content
             val annotatedString = generateAnnotatedString(fullText, query!!, highlightColor)
             val iconTint = iconColors[index % iconColors.size]
-
             Column {
                 Row {
-
                     Icon(
                         imageVector = Icons.Default.Person,
                         tint  = White,
                         contentDescription = "User Icon",
-
                         modifier = Modifier
                             .size(48.dp)
                             .background(
@@ -378,6 +375,7 @@ class SearchUI {
                             onClick: () ->Unit) {
 
             val annotatedString = generateAnnotatedString(fullText, query, highlightColor)
+            val annotatedStringNumber = generateAnnotatedString(fullText =phoneNumber,query, highlightColor)
             val iconTint = iconColors[index % iconColors.size]
             Row (modifier = Modifier.padding(12.dp)){
 
@@ -407,7 +405,7 @@ class SearchUI {
                             fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyLarge.fontFamily
                         )
                     )
-                    Text(phoneNumber,
+                    Text(annotatedStringNumber,
                         style = TextStyle(
                             color = Black,
                             fontSize = 16.sp,

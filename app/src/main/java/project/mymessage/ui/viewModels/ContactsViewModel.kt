@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import android.Manifest
 import android.content.Context
 import android.provider.ContactsContract
+import android.util.Log
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import project.mymessage.ui.contacts.Contact
@@ -39,11 +41,15 @@ class ContactsViewModel @Inject constructor(
         } else {
             ActivityCompat.requestPermissions(
                 activity,
-                arrayOf(Manifest.permission.READ_CONTACTS),
+                arrayOf(Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.SEND_SMS,
+                    Manifest.permission.READ_PHONE_STATE),
                 1
             )
         }
     }
+
+
 
     private fun loadContacts() {
         viewModelScope.launch {

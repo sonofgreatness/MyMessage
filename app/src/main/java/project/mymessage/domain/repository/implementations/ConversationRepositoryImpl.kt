@@ -19,6 +19,13 @@ class ConversationRepositoryImpl @Inject constructor(private val conversationDao
     override   suspend  fun  getFilteredConversations(search_term :String) :
             List<ConversationWithMessages> = conversationDao.getFilteredConversations(search_term)
 
+    override  suspend fun updateConversation(entity: Conversation) {
+        deleteConversationFrom(entity.from)
+        return  conversationDao.addConversation(entity)
+    }
+
+    override  suspend fun  getConversation(from :String, to :String) : Conversation? = conversationDao.getConversation(from,to)
+    override  suspend fun  deleteConversationFrom(from:String) = conversationDao.deleteConversationFrom(from)
 
 
 
