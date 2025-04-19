@@ -1,6 +1,6 @@
 package project.mymessage.ui.chats
 
-import android.util.Log
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -70,10 +70,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.DarkGray
-import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -99,10 +97,13 @@ import project.mymessage.ui.nav.Screen
 import project.mymessage.ui.theme.BlueLight
 import project.mymessage.ui.theme.TopBottomLeftRoundedShape
 import project.mymessage.ui.theme.topAndBottomLeftRounded
+import project.mymessage.ui.theme.topAndBottomRightRounded
 import project.mymessage.ui.viewModels.ContactsViewModel
 import project.mymessage.ui.viewModels.ConversationViewModel
 import project.mymessage.util.Constants
 import project.mymessage.util.ConversationsManager
+import project.mymessage.util.DatesManager
+import project.mymessage.util.Enums
 import project.mymessage.util.DatesManager as DatesManager1
 
 class ChatsUI {
@@ -372,9 +373,8 @@ class ChatsUI {
 
             val conversationWithMessages  by conversationViewModel.currentConversation.observeAsState(emptyList())
             val conversations = conversationWithMessages.firstOrNull()?.messages ?: emptyList()
-             val simDisplayname by conversationViewModel.currentSimDisplayName.observeAsState("")
-            val simIcon by conversationViewModel.currentSimIcon.observeAsState(null)
-            val simIconTint by conversationViewModel.currentSimIconTint.observeAsState(0)
+            val messageInput = remember { mutableStateOf("") }
+
 
             var drawerVisible by remember { mutableStateOf(false) }
             val configuration = LocalConfiguration.current
@@ -383,8 +383,17 @@ class ChatsUI {
 
             val context = LocalContext.current
             val drawerWidthDp = screenWidth * 0.9f
+            val to_id = phone!!.toString().trim()
+            val from_id = name!!.toString().trim()
 
 
+            val currenContact : List<Contact> = listOf(
+                Contact(
+                    fullName = to_id ,
+                    phoneNumbers = listOf(to_id)
+
+                )
+            )
 
             // Convert Dp to Float for Animatable
             val density = LocalDensity.current
@@ -422,7 +431,9 @@ class ChatsUI {
                          modifier = Modifier
                              .size(36.dp)
                              .padding(9.dp)
-                             .clickable { navController.popBackStack() }
+                             .clickable {
+                                 conversationViewModel.updateConversations()
+                                 navController.popBackStack() }
 
 
                      )
@@ -448,18 +459,34 @@ class ChatsUI {
                 Spacer(modifier = Modifier.height(16.dp))
 
 
-                Box(
-                    contentAlignment = Alignment.Center,
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Bottom,
                     modifier = Modifier.weight(1f)
                 ) {
                     if (conversations.isEmpty()) {
                         Text("No messages available")
                     } else {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(conversations) { conversation ->
-                                ConversationItem(conversation)
+                        LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.85f),
+
+                        ) {
+
+
+                            item{
+                                Column {
+                                    conversations.forEach{ conversation->
+                                        ConversationItem(conversation)
+                                    }
+
+
+                                }
                             }
                         }
+                        Spacer(modifier = Modifier.weight(1f))
+                        BottomRow(contacts = currenContact,
+                            messageInput = messageInput,
+                            conversationViewModel = conversationViewModel)
+
                     }
 
                 }
@@ -502,19 +529,13 @@ class ChatsUI {
                                          .size(36.dp)
                                          .padding(9.dp)
                                          .clickable {
-                                             Toast.makeText(
-                                                 context,
-                                                 "Option 1 clicked",
-                                                 Toast.LENGTH_SHORT
-                                             )
-                                                 .show()
+                                             deleteMessages(conversationViewModel, to_id, from_id, context)
                                          }
                          )
                              Text("Delete messages", modifier = Modifier
                                  .padding(9.dp)
                                  .clickable {
-                                     Toast.makeText(context, "Option 1 clicked", Toast.LENGTH_SHORT)
-                                         .show()
+                                     deleteMessages(conversationViewModel, to_id, from_id, context)
                                  })
 
                          }
@@ -529,40 +550,120 @@ class ChatsUI {
         }
 
 
-        @Composable
-        fun ConversationItem(message: Message) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                elevation = 4.dp
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = message.content, style = MaterialTheme.typography.h6)
-                    Text(text = "On: ${message.dateCreated}")
-                    Text(text = "is_read: ${message.isRead}")
-                    Text(text = "type: ${message.messageType}")
-                    Text(text = "from - to: ${message.from_id}  - ${message.status}")
 
-                }
-            }
+       private fun deleteMessages(conversationViewModel: ConversationViewModel,
+                           to_id:String,from_id:String,  context: Context
+        ) {
+           conversationViewModel.deleteMessagesFromConversation(to_id)
+           conversationViewModel.getConversationsWithMessagesFrom(from_id)
+           Toast.makeText(context, "messages deleted", Toast.LENGTH_SHORT).show()
+
+       }
+
+
+        @Composable
+        fun ConversationItem(message: Message, index: Int = 2) {
+           if (message.messageType == Enums.MessageType.Outgoing.value)
+               OutgoingMessage(message,index)
+            else
+                IncomingMessage(message)
+
         }
 
+
+
+
+        @Composable
+        fun OutgoingMessage(message: Message, index: Int){
+            val iconTint = Constants.iconColors[index % Constants.iconColors.size]
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(Icons.Default.Person,
+                    tint  = White,
+                    contentDescription = "User Icon",
+                    modifier = Modifier
+                        .background(
+                            color = iconTint,
+                            shape = CircleShape
+                        )
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = message.content,
+                                style = MaterialTheme.typography.body1)
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(
+                            text = DatesManager.convertTimestampToString(message.dateCreated),
+                            modifier = Modifier.padding(top = 4.dp) // Add padding to separate from the card
+                        )
+                    }
+                }
+            }
+
+        }
+
+
+
+        @Composable
+        fun IncomingMessage(message: Message){
+           Row( modifier = Modifier
+               .fillMaxWidth().padding(16.dp),
+               horizontalArrangement = Arrangement.End,
+               verticalAlignment = Alignment.Bottom)
+            {
+                Text(
+                    text = DatesManager.convertTimestampToString(message.dateCreated),
+                    modifier = Modifier.padding(top = 4.dp,
+                    end =4.dp ) // Add padding to separate from the card
+                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = message.content,
+                            style = MaterialTheme.typography.body1)
+                    }
+                }
+
+            }
+        }
 
 
         @Composable
         fun SimIconRow(conversationViewModel: ConversationViewModel) {
             val simDisplayName by conversationViewModel.currentSimDisplayName.observeAsState("")
             val simIcon by conversationViewModel.currentSimIcon.observeAsState(null)
-            val simIconTint by conversationViewModel.currentSimIconTint.observeAsState(0)
+            val currentSimSlot = conversationViewModel.getCurrentSimSlot()
 
-            Log.d("SimIconRow", "simDisplayName: $simDisplayName")
-            Log.d("SimIconRow", "simIcon: $simIcon") // Consider logging something more descriptive if drawable.toString() is not helpful
-            Log.d("SimIconRow", "simIconTint: $simIconTint")
-
-
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable {
+                    val newSimSlot = if (currentSimSlot == 0) 1 else 0 // Toggle between 0 and 1
+                    conversationViewModel.selectSimCard(newSimSlot)
+                }
+            ) {
                 if (simIcon != null) {
                     val painter: Painter = remember { BitmapPainter(simIcon!!.toBitmap().asImageBitmap()) }
                     Image(
@@ -580,10 +681,10 @@ class ChatsUI {
                         modifier = Modifier
                             .size(36.dp)
                             .padding(9.dp),
-                        tint = Gray
+                        tint = Color.Gray
                     )
                 }
-                Text(simDisplayName, modifier = Modifier.clickable { /* ... */ })
+                Text(simDisplayName, modifier = Modifier.padding(start = 8.dp))
             }
         }
         @Composable
@@ -710,7 +811,7 @@ class ChatsUI {
             Column(Modifier
                 .padding(16.dp)
                 .fillMaxHeight()){
-              TitleRow(title = "New Conversation", navController = navController)
+              TitleRowPopsBackToConversation(title = "New Conversation", navController = navController, conversationViewModel)
                 GridOfChips(recipients)
                 TextField(
                     value = recipientInput.value,
@@ -859,7 +960,26 @@ class ChatsUI {
                     modifier = Modifier
                         .size(36.dp)
                         .padding(9.dp)
-                        .clickable { navController.popBackStack() }
+                        .clickable {
+                            navController.popBackStack() }
+                )
+                Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+        }
+        @Composable fun TitleRowPopsBackToConversation(title: String, navController: NavController, conversationViewModel: ConversationViewModel)
+        {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .size(36.dp)
+                        .padding(9.dp)
+                        .clickable {
+                            conversationViewModel.updateConversations()
+                            navController.popBackStack() }
                 )
                 Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }

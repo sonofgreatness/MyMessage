@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
+import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.telephony.SubscriptionInfo
@@ -11,10 +12,15 @@ import android.telephony.SubscriptionManager
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,6 +32,7 @@ import project.mymessage.database.Entities.Message
 import project.mymessage.domain.repository.interfaces.ConversationRepository
 import project.mymessage.domain.repository.interfaces.MessageRepository
 import project.mymessage.domain.use_cases.chat.SendMessageUseCase
+import project.mymessage.domain.workers.IncomingSmsWorker
 import project.mymessage.ui.contacts.Contact
 import project.mymessage.util.operationalstates.SendMessageState
 import javax.inject.Inject
@@ -147,6 +154,7 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
         updateSimData(selectedSimSlot)
     }
 
+
     private suspend fun updateSimData(simSlot: Int) {
         withContext(Dispatchers.Main){
             Log.d("SIM_Update","Sim Slot selected :$simSlot")
@@ -155,8 +163,7 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
             withContext(Dispatchers.Main) {
                 _currentSimDisplayName.value = "No SIM"
                 _currentSimIcon.value = null
-                _currentSimIconTint.value = android.graphics.Color.GRAY // Or any default color
-                Toast.makeText(app.applicationContext,"Subscription Manager is null",Toast.LENGTH_SHORT).show()
+                _currentSimIconTint.value = android.graphics.Color.GRAY
             }
 
             return
@@ -169,10 +176,16 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
                 withContext(Dispatchers.Main) {
                     _currentSimDisplayName.value =
                         subscriptionInfo.displayName?.toString() ?: "SIM $simSlot"
+
                     val iconBitmap: Bitmap = subscriptionInfo.createIconBitmap(app.applicationContext)
+                    var simIconDrawable: Drawable = BitmapDrawable(app.resources, iconBitmap)
+
+                    simIconDrawable = DrawableCompat.wrap(simIconDrawable.mutate())
+                    DrawableCompat.setTint(simIconDrawable, subscriptionInfo.iconTint)
+                    DrawableCompat.setTintMode(simIconDrawable, PorterDuff.Mode.SRC_IN)
+                    _currentSimIcon.value = simIconDrawable
                     _currentSimIcon.value = BitmapDrawable(app.resources, iconBitmap)
                     _currentSimIconTint.value = subscriptionInfo.iconTint
-                    Toast.makeText(app.applicationContext,"Subscription Info is not null",Toast.LENGTH_SHORT).show()
 
                 }
             } else {
@@ -181,8 +194,7 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
                     _currentSimIcon.value =
                         ContextCompat.getDrawable(app, R.drawable.baseline_sim_card_alert_24) // Replace with your placeholder icon
                     _currentSimIconTint.value = android.graphics.Color.GRAY
-                    Toast.makeText(app.applicationContext,"Subscription info is null",Toast.LENGTH_SHORT).show()
-                }
+               }
             }
         } catch (e: SecurityException) {
             Log.e("SimManager", "SecurityException: ${e.message}")
@@ -198,7 +210,19 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
 
     fun addConversation(entity : Conversation){}
 
+    fun selectSimCard(simSlot: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            with(sharedPreferences.edit()) {
+                putInt("selected_sim_slot", simSlot)
+                apply()
+            }
+            updateSimData(simSlot)
+        }
+    }
 
+    fun getCurrentSimSlot(): Int {
+        return sharedPreferences.getInt("selected_sim_slot", 0)
+    }
 
    fun updateFilteredMessages(search_term : String)
    {
@@ -213,6 +237,7 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
                                 message:String) {
 
     viewModelScope.launch {
+
         sendMessageUseCase(contacts[0], message, 1).collect {
             when(it)
             {
@@ -238,7 +263,7 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
             }
 
             conversationRepository.getAllConversations().let{
-                _readAllData.postValue(it)
+                _readAllData.value = it
             }
 
 
@@ -261,6 +286,12 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
           _currentConversation.value = it
       }
       }
+    }
+
+    fun deleteMessagesFromConversation(to_id:String){
+        viewModelScope.launch {
+            messageRepository.deleteMessagesFromConversation(to_id)
+        }
     }
 
 }

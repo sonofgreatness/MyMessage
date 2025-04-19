@@ -16,7 +16,8 @@ package project.mymessage.ui.nav
     import androidx.navigation.NavType
     import androidx.navigation.compose.NavHost
     import androidx.navigation.compose.composable
-    import androidx.navigation.compose.navArgument
+    import androidx.navigation.navArgument
+
     import androidx.navigation.compose.rememberNavController
     import com.google.gson.Gson
     import project.mymessage.ui.chats.ChatsUI
@@ -43,7 +44,7 @@ fun Navigation(conversationViewModel: ConversationViewModel,
     val navController = rememberNavController()
 
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { BottomNavigationBar(navController, conversationViewModel, contactsViewModel) }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
@@ -164,7 +165,9 @@ fun Navigation(conversationViewModel: ConversationViewModel,
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+fun BottomNavigationBar(navController: NavController,
+                        conversationViewModel: ConversationViewModel,
+                        contactsViewModel: ContactsViewModel) {
     val items = listOf(Screen.MainScreen, Screen.ContactsScreen) // Define tabs
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
@@ -175,6 +178,13 @@ fun BottomNavigationBar(navController: NavController) {
                 icon = {},
                 selected = currentRoute == screen.route,
                 onClick = {
+                    if (screen.route ==  Screen.MainScreen.route)
+                    {
+                        conversationViewModel.updateConversations()
+                    }
+                    else{
+                        //update contacts
+                    }
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true

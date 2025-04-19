@@ -131,7 +131,7 @@ val app: Application,
               Log.d("getSendingNumber", "allSimId 1st element =>  ${allSimId[0]}")
             Log.d("getSendingNumber", "allSimId 1st element =>  ${allSimId[1]}")
             if (simCard != null) {
-                Log.d("getSendingNumber", "called1.5 simCard: $simCard")
+
                 val subscriptionInfo = subscriptionManager.getActiveSubscriptionInfo(simCard)
                 Log.d("getSendingNumber", "called2 subscriptionInfo: ${subscriptionInfo.number}")
                 Log.d("getSendingNumber", "called3 subscriptionInfo displayName: ${subscriptionInfo.displayName}")

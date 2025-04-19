@@ -20,6 +20,8 @@ interface ConversationDao {
     )
    suspend  fun getConversationsWithMessages(): List<ConversationWithMessages>
 
+
+    @RewriteQueriesToDropUnusedColumns
     @Transaction
     @Query(
         "SELECT * FROM conversation " +
