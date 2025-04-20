@@ -1,35 +1,63 @@
 package project.mymessage.ui.configs
 
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.runtime.*
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -39,10 +67,13 @@ import project.mymessage.database.Entities.Message
 import project.mymessage.database.Entities.SearchQuery
 import project.mymessage.ui.nav.Screen
 import project.mymessage.ui.theme.BlueLight
+import project.mymessage.ui.theme.body1
+import project.mymessage.ui.theme.body2
+import project.mymessage.ui.theme.caption
+import project.mymessage.ui.theme.h6
 import project.mymessage.ui.viewModels.ContactsViewModel
 import project.mymessage.ui.viewModels.ConversationViewModel
 import project.mymessage.ui.viewModels.SearchViewModel
-import project.mymessage.util.Constants.Companion.HIGHLIGHTCOLOR
 import project.mymessage.util.Constants.Companion.MAX_CONTACTS_SEARCH
 import project.mymessage.util.Constants.Companion.MAX_CONVERSATIONS_SEARCH
 import project.mymessage.util.Constants.Companion.MAX_MESSAGES_SEARCH
@@ -68,7 +99,8 @@ class SearchUI {
             var isSearchVisible by remember { mutableStateOf(true) }
 
 
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)) {
                 DraggableTopSheetSearch(navController, searchQuery, searchViewModel, contactsViewModel, conversationViewModel,{isSearchVisible = !isSearchVisible}) {
 
                     isSearchVisible = false
@@ -84,7 +116,7 @@ class SearchUI {
                         item {
                             Text(
                                 text = "Recent Searches",
-                                style = MaterialTheme.typography.h6,
+                                style = MaterialTheme.typography.h6.copy(color =MaterialTheme.colorScheme.onSurface),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp)
@@ -99,7 +131,7 @@ class SearchUI {
                         item {
                             Text(
                                 text = "Clear all searches",
-                                style = MaterialTheme.typography.body2.copy(color = Color.Red),
+                                style = MaterialTheme.typography.titleMedium.copy(color = Color.Red),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { searchViewModel.clearAllSearchQueries() }
@@ -124,8 +156,9 @@ class SearchUI {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp, 2.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(2.dp, BlueLight)
+                            backgroundColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(36.dp),
+                            elevation = 16.dp
                         ) {
                             Column(modifier = Modifier.padding(8.dp)) {
                                 messages.take(MAX_MESSAGES_SEARCH).forEachIndexed { index, message ->
@@ -155,8 +188,9 @@ class SearchUI {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp, 2.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(2.dp, BlueLight)
+                            backgroundColor = MaterialTheme.colorScheme.surface,
+                            elevation = 16.dp,
+                            shape = RoundedCornerShape(36.dp),
                         ){
                             Column(modifier = Modifier.padding(8.dp)) {
                                 limitedContacts.forEachIndexed { index, contact ->
@@ -194,9 +228,13 @@ class SearchUI {
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp, 2.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(2.dp, BlueLight)
+                                .padding(8.dp, 2.dp)
+
+                            ,
+                            elevation = 16.dp,
+                            backgroundColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(36.dp)
+
                         ){
 
                             Column(modifier = Modifier.padding(8.dp)) {
@@ -222,10 +260,10 @@ class SearchUI {
                 Text(
                     text = title,
                     style = TextStyle(
-                        color = Color.LightGray,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
-                        fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyLarge.fontFamily
+                        fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
                     ),
 
                     modifier = Modifier
@@ -254,10 +292,9 @@ class SearchUI {
 
         @Composable
         fun MessageItem(message: Message, navController: NavController,index: Int,
-                        query: String?, highlightColor: Color = HIGHLIGHTCOLOR
+                        query: String?, highlightColor: Color = MaterialTheme.colorScheme.primary
 
         ){
-
             val fullText = message.content
             val annotatedString = generateAnnotatedString(fullText, query!!, highlightColor)
             val iconTint = iconColors[index % iconColors.size]
@@ -285,20 +322,17 @@ class SearchUI {
                     )
                     Column {
                         Text(message.from_id,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                                fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyLarge.fontFamily
-
+                           style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
                         )
                         Row {
                          Column()
                          {
                                 Text(annotatedString,
                                 softWrap = true,
-                                    fontSize = 21.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyLarge.fontFamily,
+                                    style =  MaterialTheme.typography.bodyLarge
+                                        .copy(color = MaterialTheme.colorScheme.onSurface),
                                     modifier = Modifier
+
                                         .fillMaxWidth()
                                         .padding(8.dp, end = 24.dp)
                                         .clickable {
@@ -331,7 +365,8 @@ class SearchUI {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                elevation = 4.dp
+                shape = RoundedCornerShape(36.dp),
+                backgroundColor = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
@@ -354,23 +389,26 @@ class SearchUI {
 
                         }
                     ) {
-                        Text(text = search.term, style = MaterialTheme.typography.body1)
+                        Text(text = search.term,
+                            style = MaterialTheme.typography.body1.copy(color = MaterialTheme.colorScheme.onSurface))
                         Text(
                             text = DatesManager.convertTimestampToString(search.dateCreated),
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.caption.copy(color = MaterialTheme.colorScheme.onSurface),
                             color = Color.Gray
                         )
                     }
                     IconButton(onClick = onDelete) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = "Delete")
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
         }
 
         @Composable
-        fun HighlightedText(fullText: String,phoneNumber : String , query: String,
-                            highlightColor: Color = HIGHLIGHTCOLOR,
+        fun HighlightedText(fullText: String, phoneNumber : String, query: String,
+                            highlightColor: Color = MaterialTheme.colorScheme.primary,
                             index: Int,
                             onClick: () ->Unit) {
 
@@ -398,20 +436,12 @@ class SearchUI {
                     onClick()
                 }) {
                     Text(annotatedString,
-                        style = TextStyle(
-                            color = Black,
-                            fontSize = 21.sp,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyLarge.fontFamily
-                        )
+                        style = MaterialTheme.typography.bodyLarge
+                            .copy(color = MaterialTheme.colorScheme.onSurface)
                     )
                     Text(annotatedStringNumber,
-                        style = TextStyle(
-                            color = Black,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyLarge.fontFamily))
-
+                        style = MaterialTheme.typography.bodyLarge
+                            .copy(color = MaterialTheme.colorScheme.onSurface))
                     GrayDivider()
                 }
             }
@@ -425,7 +455,7 @@ class SearchUI {
             navController: NavController,
             index : Int,
             query:String?,
-            highlightColor: Color = HIGHLIGHTCOLOR
+            highlightColor: Color = MaterialTheme.colorScheme.primary
 
             ) {
             val conversation = conversationWithMessages.conversation
@@ -483,14 +513,13 @@ class SearchUI {
                             }
                     ) {
                         Text(text = annotatedString,
-                            style = MaterialTheme.typography.h6,
-                        color = Black)
+                            style = MaterialTheme.typography.h6
+                                .copy(color = MaterialTheme.colorScheme.onSurface))
                         Text(text = latestMessage,
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.body2.
+                            copy(color = MaterialTheme.colorScheme.onSurface),
                             maxLines = 1,
-                            color = Black,
                             overflow = TextOverflow.Ellipsis)
-
                     }
 
                     Column(
@@ -498,7 +527,8 @@ class SearchUI {
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
                         Text(text = latestMessageTime,
-                            style = MaterialTheme.typography.caption)
+                            style = MaterialTheme.typography.caption.
+                            copy(color = MaterialTheme.colorScheme.onSurface))
                         Spacer(modifier = Modifier.height(24.dp))
                         if (latestUnreadMessages!=0)
                             Box(
@@ -510,8 +540,8 @@ class SearchUI {
                             {
                                 Text(
                                     text = latestUnreadMessages.toString(),
-                                    style = MaterialTheme.typography.caption,
-                                    color = White
+                                    style = MaterialTheme.typography.caption
+                                        .copy(color = MaterialTheme.colorScheme.onSurface),
                                 )
                             }
                     }
@@ -549,14 +579,13 @@ class SearchUI {
             val coroutineScope = rememberCoroutineScope()
             val animatedHeight by animateFloatAsState(
                 targetValue = sheetHeightFraction * screenHeightPx,
-                animationSpec = tween(durationMillis = 300)
-            )
+                animationSpec = tween(durationMillis = 300))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(with(density) { animatedHeight.toDp() })
-                    .background(Color.LightGray)
+                    .background(MaterialTheme.colorScheme.surface)
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onDragEnd = {
@@ -586,7 +615,7 @@ class SearchUI {
                     if (sheetHeightFraction > 0.15f) {
                         Text(
                             text = "Search",
-                            style = MaterialTheme.typography.h6,
+                            style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colorScheme.onSurface),
                             modifier = Modifier.padding(16.dp)
                         )
                     }
@@ -600,6 +629,7 @@ class SearchUI {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .size(32.dp)
                                 .clickable { navController.popBackStack() }
@@ -607,6 +637,7 @@ class SearchUI {
 
                         OutlinedTextField(
                             value = searchQuery.value,
+
                             onValueChange = { searchQuery.value = it
                                   updateLists(searchViewModel,contactsViewModel, conversationViewModel,searchQuery)
                                    onSearchClickFalse()
@@ -623,16 +654,24 @@ class SearchUI {
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 8.dp)
+                                .background(MaterialTheme.colorScheme.surface, CircleShape),
+                            colors=TextFieldDefaults. outlinedTextFieldColors(
+                                textColor = MaterialTheme.colorScheme.onSurface,
+                                cursorColor = MaterialTheme.colorScheme.primary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                            )
                         )
 
                         Icon(Icons.Default.Close,
                             contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .size(32.dp)
                                 .clickable {
                                     onSearchClick()
-                                }
-                        )
+                                })
                     }
                 }
             }
@@ -663,7 +702,6 @@ class SearchUI {
                 }
             }
         }
-
     }
 
 

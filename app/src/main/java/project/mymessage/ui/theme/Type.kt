@@ -2,6 +2,7 @@ package project.mymessage.ui.theme
 
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -127,3 +128,54 @@ val Typography = Typography(
         letterSpacing = 1.5.sp
     )
 )
+@Stable
+val Typography.h1: TextStyle
+    get() = displayLarge
+
+@Stable
+val Typography.h2: TextStyle
+    get() = displayMedium
+
+@Stable
+val Typography.h3: TextStyle
+    get() = displaySmall
+
+@Stable
+val Typography.h4: TextStyle
+    get() = headlineLarge
+
+@Stable
+val Typography.h5: TextStyle
+    get() = headlineMedium
+
+@Stable
+val Typography.h6: TextStyle
+    get() = titleLarge
+
+@Stable
+val Typography.subtitle1: TextStyle
+    get() = titleMedium
+
+@Stable
+val Typography.subtitle2: TextStyle
+    get() = titleSmall
+
+@Stable
+val Typography.body1: TextStyle
+    get() = bodyLarge
+
+@Stable
+val Typography.body2: TextStyle
+    get() = bodyMedium
+
+@Stable
+val Typography.button: TextStyle
+    get() = labelLarge
+
+@Stable
+val Typography.caption: TextStyle
+    get() = labelMedium
+
+@Stable
+val Typography.overline: TextStyle
+    get() = labelSmall

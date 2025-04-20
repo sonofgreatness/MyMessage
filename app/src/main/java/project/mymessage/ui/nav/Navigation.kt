@@ -1,12 +1,15 @@
 package project.mymessage.ui.nav
 
 
+    import android.widget.Toast
+    import androidx.compose.foundation.background
     import androidx.compose.foundation.layout.Box
     import androidx.compose.foundation.layout.padding
     import androidx.compose.material.BottomNavigation
     import androidx.compose.material.BottomNavigationItem
     import androidx.compose.material.Scaffold
     import androidx.compose.material.Text
+    import androidx.compose.material3.MaterialTheme
     import androidx.compose.runtime.Composable
     import androidx.compose.runtime.mutableStateListOf
     import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ package project.mymessage.ui.nav
     import project.mymessage.ui.configs.SearchUI.Companion.SearchScreen
     import project.mymessage.ui.contacts.Contact
     import project.mymessage.ui.contacts.ContactUI
+    import project.mymessage.ui.theme.Typography
     import project.mymessage.ui.viewModels.AboutViewModel
     import project.mymessage.ui.viewModels.ContactsViewModel
     import project.mymessage.ui.viewModels.ConversationViewModel
@@ -171,20 +175,18 @@ fun BottomNavigationBar(navController: NavController,
     val items = listOf(Screen.MainScreen, Screen.ContactsScreen) // Define tabs
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-    BottomNavigation {
+    BottomNavigation(
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground) {
         items.forEach { screen ->
             BottomNavigationItem(
-                label = { Text(screen.title!!) },
+                label = { Text(screen.title!!,
+                    style = Typography.titleLarge.copy(color = MaterialTheme.colorScheme.onBackground)
+                ) },
                 icon = {},
                 selected = currentRoute == screen.route,
                 onClick = {
-                    if (screen.route ==  Screen.MainScreen.route)
-                    {
-                        conversationViewModel.updateConversations()
-                    }
-                    else{
-                        //update contacts
-                    }
+
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true

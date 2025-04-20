@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +27,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
@@ -36,16 +34,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
-import androidx.compose.material.Card
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -55,6 +53,10 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -96,8 +98,11 @@ import project.mymessage.ui.contacts.Contact
 import project.mymessage.ui.nav.Screen
 import project.mymessage.ui.theme.BlueLight
 import project.mymessage.ui.theme.TopBottomLeftRoundedShape
+import project.mymessage.ui.theme.body1
+import project.mymessage.ui.theme.body2
+import project.mymessage.ui.theme.caption
+import project.mymessage.ui.theme.h6
 import project.mymessage.ui.theme.topAndBottomLeftRounded
-import project.mymessage.ui.theme.topAndBottomRightRounded
 import project.mymessage.ui.viewModels.ContactsViewModel
 import project.mymessage.ui.viewModels.ConversationViewModel
 import project.mymessage.util.Constants
@@ -109,14 +114,24 @@ import project.mymessage.util.DatesManager as DatesManager1
 class ChatsUI {
 
     companion object {
+
         @Composable
         fun MainScreen(navController: NavController, viewModel: ConversationViewModel) {
+
+            val backgroundColor = MaterialTheme.colorScheme.background
+            val surface = MaterialTheme.colorScheme.surface
+
             val conversations by viewModel.readAllConversations.observeAsState(emptyList())
             val totalUnreadMessages by viewModel.totalUnreadMessages.observeAsState(0)
             viewModel.updateConversations()
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Column(modifier = Modifier.fillMaxSize()) {
+            LaunchedEffect(viewModel.updateConversations()) {
+                println( "Conversations changed: ${conversations.size}")
+            }
+
+                Box(modifier = Modifier.fillMaxSize().background(backgroundColor)) {
+                    Column(modifier = Modifier.fillMaxSize()
+                       ) {
                         DraggableTopSheet(totalUnreadMessages, navController)
                         Spacer(modifier = Modifier.height(8.dp))
                         Box(modifier = Modifier.weight(1f))
@@ -128,11 +143,17 @@ class ChatsUI {
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(8.dp, 2.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    border = BorderStroke(2.dp, BlueLight)
+                                        .padding(8.dp, 2.dp)
+
+                                    ,
+                                    elevation = CardDefaults.cardElevation(16.dp),
+                                    shape = RoundedCornerShape(36.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = surface)
+
                                 ) {
-                                    Column(modifier = Modifier.padding(8.dp)) {
+                                    Column(modifier = Modifier.padding(8.dp)
+                                        ) {
                                         conversations.forEachIndexed { index, conversationWithMessages ->
                                             ConversationItem2(conversationWithMessages, navController, index)
                                         }
@@ -158,6 +179,10 @@ class ChatsUI {
         }
         @Composable
         fun DraggableTopSheet(totalUnreadMessages:Int, navController: NavController) {
+
+            val surface = MaterialTheme.colorScheme.surface
+            val onSurface = MaterialTheme.colorScheme.onSurface
+
             var sheetHeightFraction by remember { mutableStateOf(0.4f) }
             val configuration = LocalConfiguration.current
             val density = LocalDensity.current
@@ -177,7 +202,7 @@ class ChatsUI {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(with(density) { animatedHeight.toDp() })
-                    .background(Color.LightGray)
+                    .background(surface)
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onDragEnd = {
@@ -211,7 +236,7 @@ class ChatsUI {
                         // Only show this content when expanded
                         Text(
                             text = unreadText,
-                            style = MaterialTheme.typography.h6,
+                            style = MaterialTheme.typography.h6.copy(color = onSurface),
                             modifier = Modifier.padding(16.dp)
                         )
 
@@ -225,6 +250,11 @@ class ChatsUI {
                                 .padding(6.dp)
                                 .height(48.dp)
                                 .width(150.dp)
+                            ,
+                            colors =  ButtonDefaults. buttonColors(
+                                backgroundColor = MaterialTheme.colorScheme.onBackground,
+                                contentColor = MaterialTheme.colorScheme.background
+                            )
                         ) {
                             Text("View")
                         }
@@ -244,7 +274,7 @@ class ChatsUI {
                         } else {
                             Text(
                                 text = "Messages",
-                                style = MaterialTheme.typography.body1
+                                style = MaterialTheme.typography.body1.copy(color = onSurface)
                             )
                         }
 
@@ -253,6 +283,7 @@ class ChatsUI {
                         ) {
                             Icon(Icons.Default.Search,
                                 contentDescription = "Search",
+                                tint = onSurface,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -260,6 +291,7 @@ class ChatsUI {
                                     })
                             Spacer(modifier = Modifier.width(10.dp))
                             Icon(Icons.Default.MoreVert, contentDescription = "More",
+                                tint = onSurface,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -287,7 +319,7 @@ class ChatsUI {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
+                    .padding(8.dp)
 
             ) {
                 Row(
@@ -330,9 +362,10 @@ class ChatsUI {
                                 )
                             }
                     ) {
-                        Text(text = conversation.from, style = MaterialTheme.typography.h6)
+                        Text(text = conversation.from,
+                            style = MaterialTheme.typography.h6.copy(color =MaterialTheme.colorScheme.onSurface))
                         Text(text = latestMessage,
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.body2.copy(color = MaterialTheme.colorScheme.onSurface),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                             )
@@ -342,7 +375,8 @@ class ChatsUI {
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
-                        Text(text = latestMessageTime, style = MaterialTheme.typography.caption)
+                        Text(text = latestMessageTime,
+                            style = MaterialTheme.typography.caption.copy(color = MaterialTheme.colorScheme.onSurface))
                         Spacer(modifier = Modifier.height(24.dp))
                         if (latestUnreadMessages!=0)
                             Box(
@@ -353,7 +387,7 @@ class ChatsUI {
                             ) {
                                 Text(
                                     text = latestUnreadMessages.toString(),
-                                    style = MaterialTheme.typography.caption,
+                                    style = MaterialTheme.typography.caption.copy(color =MaterialTheme.colorScheme.onSurface),
                                     color = White
                                 )
                             }
@@ -370,6 +404,8 @@ class ChatsUI {
             LaunchedEffect(name) {
                 conversationViewModel.getConversationsWithMessagesFrom(name!!)
             }
+
+
 
             val conversationWithMessages  by conversationViewModel.currentConversation.observeAsState(emptyList())
             val conversations = conversationWithMessages.firstOrNull()?.messages ?: emptyList()
@@ -401,6 +437,7 @@ class ChatsUI {
 
             val offsetX = remember { Animatable(drawerWidthPx) }
 
+
             LaunchedEffect(drawerVisible) {
                 offsetX.animateTo(
                     targetValue = if (drawerVisible) 0f else drawerWidthPx,
@@ -408,12 +445,14 @@ class ChatsUI {
                 )
             }
 
-
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .background(MaterialTheme.colorScheme.background),
                 verticalArrangement = Arrangement.Top
+
             ) {
 
                 Box(
@@ -421,6 +460,7 @@ class ChatsUI {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(0.dp, 8.dp)
+                        .background(MaterialTheme.colorScheme.background)
                 ) {
                  Row(Modifier.fillMaxWidth(),
                      horizontalArrangement = Arrangement.SpaceBetween,
@@ -428,74 +468,71 @@ class ChatsUI {
                  {
                      Icon(Icons.Default.ArrowBack,
                          contentDescription = "Back",
+                         tint = MaterialTheme.colorScheme.onBackground,
                          modifier = Modifier
                              .size(36.dp)
                              .padding(9.dp)
                              .clickable {
-                                 conversationViewModel.updateConversations()
-                                 navController.popBackStack() }
+                                 navController.navigate(Screen.MainScreen.route)
+                             }
 
 
                      )
                      Column {
-                         Text("$name", style = MaterialTheme.typography.h6)
-                         Text("$phone", style = MaterialTheme.typography.h6)
+                         Text(name, style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colorScheme.onSurface))
+                         Text(phone, style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colorScheme.onSurface))
                      }
                      Icon(
                          imageVector = Icons.Default.MoreVert,
                          contentDescription = "More",
+                         tint = MaterialTheme.colorScheme.onSurface,
                          modifier = Modifier
                              .size(36.dp)
                              .padding(9.dp)
                              .clickable {
                                  drawerVisible = true
-
-                             }
-                     )
-
+                             })
                  }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom,
                     modifier = Modifier.weight(1f)
                 ) {
                     if (conversations.isEmpty()) {
-                        Text("No messages available")
+                        Text("No messages available"
+                        ,style = MaterialTheme.typography.bodyMedium.copy(color =MaterialTheme.colorScheme.onSurface)
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        BottomRow(contacts = currenContact,
+                            messageInput = messageInput,
+                            conversationViewModel = conversationViewModel)
+
                     } else {
                         LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.85f),
-
                         ) {
-
-
                             item{
                                 Column {
                                     conversations.forEach{ conversation->
                                         ConversationItem(conversation)
                                     }
-
-
                                 }
                             }
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         BottomRow(contacts = currenContact,
                             messageInput = messageInput,
-                            conversationViewModel = conversationViewModel)
-
+                            conversationViewModel = conversationViewModel
+                            )
                     }
-
                 }
             }
             if (drawerVisible) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Black.copy(alpha = 0.5f))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
                         .clickable {
                             drawerVisible = false
                         }
@@ -512,37 +549,54 @@ class ChatsUI {
                             .fillMaxHeight()
                             .align(Alignment.CenterEnd) // Drawer slides in from the right
                             .background(
-                                White,
+                                MaterialTheme.colorScheme.background,
                                 shape = TopBottomLeftRoundedShape(
                                     topLeft = CornerSize(16.dp),
                                     bottomLeft = CornerSize(16.dp)
                                 )
                             )
                     ) {
-                        // Content of your side navigation drawer goes here
-                        // Example:
-                        Column(modifier = Modifier.padding(16.dp)) {
-                         Row { Icon(
-                                     imageVector = Icons.Default.Delete,
-                                     contentDescription = "Delete",
-                                     modifier = Modifier
-                                         .size(36.dp)
-                                         .padding(9.dp)
-                                         .clickable {
-                                             deleteMessages(conversationViewModel, to_id, from_id, context)
-                                         }
-                         )
-                             Text("Delete messages", modifier = Modifier
-                                 .padding(9.dp)
-                                 .clickable {
-                                     deleteMessages(conversationViewModel, to_id, from_id, context)
-                                 })
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Row {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .padding(9.dp)
+                                        .clickable {
+                                            deleteMessages(
+                                                conversationViewModel,
+                                                to_id,
+                                                from_id,
+                                                context
+                                            )
+                                        }
+                                )
+                                Text(
+                                    "Delete messages", modifier = Modifier
+                                        .padding(9.dp)
+                                        .clickable {
+                                            deleteMessages(
+                                                conversationViewModel,
+                                                to_id,
+                                                from_id,
+                                                context
+                                            )
+                                        },
 
-                         }
+                                    style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+                                )
+
+                            }
                             Spacer(Modifier.weight(1f))
                             SimIconRow(conversationViewModel)
-                            }
+                        }
                     }
+                }
                 }
 
 
@@ -599,8 +653,10 @@ class ChatsUI {
                 ) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = message.content,
@@ -614,7 +670,8 @@ class ChatsUI {
                     ) {
                         Text(
                             text = DatesManager.convertTimestampToString(message.dateCreated),
-                            modifier = Modifier.padding(top = 4.dp) // Add padding to separate from the card
+                            style = MaterialTheme.typography.caption.copy(color = MaterialTheme.colorScheme.onSurface),
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
@@ -634,16 +691,19 @@ class ChatsUI {
                 Text(
                     text = DatesManager.convertTimestampToString(message.dateCreated),
                     modifier = Modifier.padding(top = 4.dp,
-                    end =4.dp ) // Add padding to separate from the card
+                    end =4.dp )
+                    , style = MaterialTheme.typography.caption.
+                    copy(color = MaterialTheme.colorScheme.onSurface)
                 )
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    elevation = 4.dp,
-                    shape = RoundedCornerShape(16.dp),
-                ) {
+                    elevation = CardDefaults.cardElevation(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = message.content,
-                            style = MaterialTheme.typography.body1)
+                            style = MaterialTheme.typography.body1.copy(color = MaterialTheme.colorScheme.onSurface))
                     }
                 }
 
@@ -674,7 +734,6 @@ class ChatsUI {
                             .padding(9.dp)
                     )
                 } else {
-                    // Placeholder if simIcon is null (e.g., during loading, or permission issue)
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_sim_card_24), // Replace with your placeholder drawable resource
                         contentDescription = "Sim Placeholder",
@@ -684,7 +743,9 @@ class ChatsUI {
                         tint = Color.Gray
                     )
                 }
-                Text(simDisplayName, modifier = Modifier.padding(start = 8.dp))
+                Text(simDisplayName, modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurface)
+                )
             }
         }
         @Composable
@@ -695,7 +756,8 @@ class ChatsUI {
             val conversations by viewModel.readAllConversations.observeAsState(emptyList())
             val totalUnreadMessages by viewModel.totalUnreadMessages.observeAsState(0)
 
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)) {
                 DraggableTopSheetUnreadMessages(totalUnreadMessages, navController)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(modifier = Modifier.weight(1f))
@@ -703,9 +765,31 @@ class ChatsUI {
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    itemsIndexed(conversations) { index, conversationWithMessages ->
-                        ConversationItem2(conversationWithMessages, navController, index)
+
+
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp, 2.dp)
+
+                            ,
+                            elevation = CardDefaults.cardElevation(16.dp),
+                            shape = RoundedCornerShape(36.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface)
+
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)
+                            ) {
+                                conversations.forEachIndexed { index, conversationWithMessages ->
+                                    ConversationItem2(conversationWithMessages, navController, index)
+                                }
+                            }
+
                     }
+                }
+
                 }
             }
         }
@@ -730,7 +814,7 @@ class ChatsUI {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(with(density) { animatedHeight.toDp() })
-                    .background(Color.LightGray)
+                    .background(MaterialTheme.colorScheme.surface)
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onDragEnd = {
@@ -763,7 +847,7 @@ class ChatsUI {
                     if (sheetHeightFraction > 0.15f) {
                         Text(
                             text = unreadText,
-                            style = MaterialTheme.typography.h6,
+                            style = MaterialTheme.typography.h6.copy(color = MaterialTheme.colorScheme.onSurface),
                             modifier = Modifier.padding(16.dp)
                         )
 
@@ -777,6 +861,7 @@ class ChatsUI {
                     ) {
                         Icon(Icons.Default.ArrowBack,
                             contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .size(32.dp)
                                 .clickable { navController.navigate(Screen.MainScreen.route) }
@@ -785,7 +870,9 @@ class ChatsUI {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Spacer(modifier = Modifier.width(16.dp))
-                            Icon(Icons.Default.MoreVert, contentDescription = "More", modifier = Modifier.size(32.dp))
+                            Icon(Icons.Default.MoreVert,
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                contentDescription = "More", modifier = Modifier.size(32.dp))
                         }
                     }
                 }
@@ -902,23 +989,35 @@ class ChatsUI {
             val coroutineScope = rememberCoroutineScope()
 
             Scaffold(
-                snackbarHost = { SnackbarHost(snackbarHostState) }
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                modifier = Modifier.background(MaterialTheme.colorScheme.background)
             ) { padding ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight(Alignment.Bottom)
                         .padding(padding)
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .background(MaterialTheme.colorScheme.background)
+                    ,
                     verticalAlignment = Alignment.Bottom,
                 ) {
                     TextField(
                         value = messageInput.value,
                         onValueChange = { messageInput.value = it },
+
                         modifier = Modifier
                             .width(screenWidth * 0.7f)
                             .padding(end = 8.dp),
-                        placeholder = { Text("Message...") },
+                        placeholder = { Text(" Write message ...")},
+                        colors= TextFieldDefaults.textFieldColors(
+                            textColor = MaterialTheme.colorScheme.onBackground,
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor   = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+
+                        )
                     )
                     IconButton(
                         onClick = {
@@ -928,6 +1027,7 @@ class ChatsUI {
                                     contacts = contacts,
                                     conversationViewModel = conversationViewModel
                                 )
+                                messageInput.value = ""
                             } else {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar("No recipients selected")
@@ -939,7 +1039,7 @@ class ChatsUI {
                         Icon(
                             imageVector = Icons.Default.Send,
                             contentDescription = "Send",
-                            tint = Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -1008,4 +1108,6 @@ class ChatsUI {
             }
         }
     }
+
+
 }

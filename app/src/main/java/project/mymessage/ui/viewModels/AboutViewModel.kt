@@ -37,9 +37,7 @@ class AboutViewModel @Inject constructor(
     val isUpdateAvailable: LiveData<Boolean> get() = _isUpdateAvailable
 
     init{
-        Log.d("breakpoints", " B4 init called")
         checkForUpdates()
-        Log.d("breakpoints", "init called")
     }
 
 

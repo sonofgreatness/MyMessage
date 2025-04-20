@@ -15,12 +15,9 @@ class IncomingSmsWorker  @Inject
   )
     : CoroutineWorker(context, workerParams) {
 
-
-
-
-    override suspend fun doWork(): Result {
-        val sender = inputData.getString("sender") ?: return Result.failure()
-        val messageBody = inputData.getString("message_body") ?: return Result.failure()
+        override suspend fun doWork(): Result {
+            val sender = inputData.getString("sender") ?: return Result.failure()
+            val messageBody = inputData.getString("message_body") ?: return Result.failure()
 
         return try {
             receiveMessageUseCase(sender, messageBody).collect {

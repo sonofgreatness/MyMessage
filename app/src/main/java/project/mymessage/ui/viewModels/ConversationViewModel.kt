@@ -97,34 +97,8 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
             loadSimData()
         }
 
-       /* viewModelScope.launch {
-
-            val entity = Conversation(
-                from = "Simphiwe",
-            to="MTN",
-            dateCreated =  Timestamp(System.currentTimeMillis()))
-            val entity2 = Conversation(
-                from = "Senzo",
-                to="Eswatini Mobile",
-                dateCreated =  Timestamp(System.currentTimeMillis()))
-            conversationRepository.addConversation(entity)
-            conversationRepository.addConversation(entity2)
-            val entity3 = Message(
-                from_id = "Simphiwe",
-                to_id = "MTN",
-                content =  "Hey , you owe me an apology",
-                messageType =  Enums.MessageType.Outgoing.value)
-            val entity4 = Message(
-                from_id = "Senzo",
-                to_id = "Eswatini Mobile",
-                content =  "I love my life.",
-                messageType =  Enums.MessageType.Outgoing.value)
-            messageRepository.addMessage(entity3)
-            messageRepository.addMessage(entity4)
 
 
-
-        }*/
 
 
         viewModelScope.launch {
@@ -258,17 +232,22 @@ private val _filteredConversations = MutableLiveData<List<ConversationWithMessag
     }
     fun updateConversations(){
         viewModelScope.launch {
+            val conversations = conversationRepository.getConversationsWithMessages()
             conversationRepository.getTotalUnreadMessages().let{
                 _totalUnreadMessages.value = it
             }
 
-            conversationRepository.getAllConversations().let{
-                _readAllData.value = it
+
+            withContext(Dispatchers.Main) {
+                _readAllConversations.value = conversations
             }
+
 
 
         }
     }
+
+
 
 
     fun updateFilteredConversations(search_term: String){
