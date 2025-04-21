@@ -128,7 +128,7 @@ fun Navigation(conversationViewModel: ConversationViewModel,
                 }
                 composable(route = Screen.AboutScreen.route){
                     AboutUI.AboutScreen(
-                        viewModel =aboutViewModel)
+                        viewModel =aboutViewModel, navController= navController)
                 }
                 composable(route =  Screen.AddConversationScreen.route+
                     "?recipients={recipients}",

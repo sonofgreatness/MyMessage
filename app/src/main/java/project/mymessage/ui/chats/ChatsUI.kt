@@ -1057,6 +1057,7 @@ class ChatsUI {
                 Icon(
                     Icons.Default.ArrowBack,
                     contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .size(36.dp)
                         .padding(9.dp)

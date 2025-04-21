@@ -10,6 +10,8 @@ class Constants {
         const val PLACEHOLDER_CONVERSATION="placeholder"
         const val GITHUB_API = "https://api.github.com/"
         const val GITHUB_REPO_URL = "repos/sonofgreatness/MyMessage/releases/latest"
+        const val THEME_PREFS = "themeMode"
+
         const val MAX_MESSAGES_SEARCH=8
         const val MAX_CONTACTS_SEARCH=3
         const val MAX_CONVERSATIONS_SEARCH=2

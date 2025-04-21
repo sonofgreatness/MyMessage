@@ -3,20 +3,29 @@ package project.mymessage
 import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.provider.Telephony
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -34,17 +43,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.google.accompanist.pager.*
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import project.mymessage.ui.theme.Grey300
-import project.mymessage.ui.theme.Grey900
 import project.mymessage.ui.theme.MyMessageTheme
 import project.mymessage.ui.theme.RedLight
+import project.mymessage.ui.viewModels.AboutViewModel
+import project.mymessage.util.Constants.Companion.THEME_PREFS
+import project.mymessage.util.Enums
+import kotlin.getValue
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
+    private val mAboutViewModel: AboutViewModel by viewModels()
     private lateinit var intentLauncher: ActivityResultLauncher<Intent>
 
     companion object {
@@ -73,7 +88,8 @@ class MainActivity : ComponentActivity() {
         setIntentLauncher()
         window.statusBarColor = ContextCompat.getColor(this, R.color.grey_900)
         setContent {
-            MyMessageTheme {
+            MyMessageTheme(themePref= mAboutViewModel.sharedPreferences.getString(THEME_PREFS, Enums.ThemeMode.NOTSET.name)
+                .toString()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     MainFunction()
                 }
@@ -188,13 +204,17 @@ class MainActivity : ComponentActivity() {
         ) {
             if (currentPage == 2) {
                 OutlinedButton(
-                    onClick = { requestToBeDefaultHandler() },
+                    onClick = { moveToMainActivity2() },
                     shape = RoundedCornerShape(50),
+                    colors =  ButtonDefaults. outlinedButtonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+
+                    )
                 ) {
                     Text(
                         text = "Get Started",
                         modifier = Modifier.padding(vertical = 8.dp, horizontal = 40.dp),
-                        color = Grey900
                     )
                 }
             } else {
@@ -225,20 +245,6 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun requestToBeDefaultHandler() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager: RoleManager = getSystemService(RoleManager::class.java)
-            if (roleManager.isRoleAvailable(role) && !roleManager.isRoleHeld(role)) {
-                intentLauncher.launch(roleManager.createRequestRoleIntent(role))
-            } else {
-                showToast("Already default SMS app.")
-            }
-        } else {
-            val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT)
-            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, packageName)
-            startActivityForResult(intent, 1001)
-        }
-    }
 
     private fun setIntentLauncher() {
         intentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {

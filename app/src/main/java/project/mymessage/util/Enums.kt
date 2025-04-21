@@ -9,4 +9,7 @@ class Enums {
     enum class MessageStatus {
         SENT, DELIVERED, DRAFT, ERROR
     }
+    enum class ThemeMode{
+        DAY , NIGHT, NOTSET
+    }
 }

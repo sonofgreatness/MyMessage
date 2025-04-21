@@ -17,6 +17,8 @@ import org.json.JSONObject
 import project.mymessage.domain.repository.REST_API.data_classes.Asset
 import project.mymessage.domain.repository.REST_API.data_classes.ReleaseResponse
 import project.mymessage.domain.repository.REST_API.interfaces.GithubApi
+import project.mymessage.util.Constants.Companion.THEME_PREFS
+import project.mymessage.util.Enums.ThemeMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,6 +27,14 @@ class AboutViewModel @Inject constructor(
     val sharedPreferences: SharedPreferences,
     private val api: GithubApi
 ) : ViewModel() {
+
+    private val _isDarkTheme = MutableLiveData<ThemeMode>()
+    val isDarkTheme: LiveData<ThemeMode> get() = _isDarkTheme
+
+
+
+
+
 
 
     private val _downloadUrl = MutableLiveData<String>()
@@ -38,6 +48,16 @@ class AboutViewModel @Inject constructor(
 
     init{
         checkForUpdates()
+    }
+
+
+    fun toggleTheme() {
+        Log.d("toggleTheme value", "${_isDarkTheme.value}")
+        val currentTheme = _isDarkTheme.value
+        val newTheme =  if (currentTheme == ThemeMode.DAY) ThemeMode.NIGHT else  ThemeMode.DAY
+        _isDarkTheme.value = newTheme
+        sharedPreferences.edit().putString(THEME_PREFS, newTheme.name).apply()
+        Log.d("toggleTheme value2", "${_isDarkTheme.value}")
     }
 
 
