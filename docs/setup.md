@@ -45,18 +45,6 @@ val sharedPreferences = context.getSharedPreferences("prefs", Context.MODE_PRIVA
 sharedPreferences.edit().putString("app_version", "v1.0.0").apply()
 ```
 
-## 📁 File Structure (Quick Overview)
-
-MyMessage/
-├── app/                   # Android app source
-│   ├── ui/                # Jetpack Compose UI
-│   ├── viewmodel/         # ViewModels with Hilt DI
-│   ├── domain/            # UseCases
-│   ├── data/              # Repositories, sources, SharedPreferences
-│   └── workers/           # WorkManager background logic
-├── .github/workflows/     # CI/CD GitHub Actions
-├── docs/                  # Documentation files for GitHub Pages
-└── README.md
 
 
 For further inquiries:
