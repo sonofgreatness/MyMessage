@@ -148,7 +148,7 @@ class AboutUI {
                             textDecoration = TextDecoration.Underline
                         ),
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://yourusername.github.io/yourproject"))
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://sonofgreatness.github.io/MyMessage/"))
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             navController.context.startActivity(intent)
                         }
